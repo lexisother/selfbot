@@ -2,9 +2,8 @@ require 'pg'
 require 'thread'
 
 module Selfbot
-  module DBC
-    # Database adapter extensions
-  end
+  # Database adapter extensions
+  module DBC; end
 
   class Database
     include DBC
@@ -23,6 +22,10 @@ module Selfbot
 
     def transaction
       @mutex.synchronize { @pg.transaction { yield self } }
+    end
+
+    def disconnect
+      @pg.close
     end
   end
 end

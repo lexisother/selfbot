@@ -1,13 +1,13 @@
 require 'mij-discord'
 
-auth = ENV['AUTH'].split(/\s+/)
-exit(-1) if auth.length < 2
-
 module Selfbot
+  auth = ENV['AUTH'].split(/\s+/)
+  exit(-1) if auth.length < 2
+
   BOTOPTS = {
     type: :user,
-    client_id: 243061915281129472,
-    token: "mfa.5SxllbjuQAxFTsc1GKKMk1hACQ9hyohgSgxVLDWvNqDMEytAt1m6lW2tKKcggtcEjh6wdiakjaWAHbOx-X0T",
+    client_id: auth[0],
+    token: auth[1],
     ignore_bots: true,
     ignore_self: false,
   }.freeze
@@ -50,10 +50,12 @@ module Selfbot::Defs
 end
 
 begin
-  $bot.connect(false)
+  # $bot.connect(false)
+  require 'pry'
+  pry
 rescue Interrupt
   puts("Received Ctrl-C, exiting...")
 end
 
-$bot.disconnect
+# $bot.disconnect
 $dbc.disconnect
