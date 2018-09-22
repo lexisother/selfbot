@@ -156,7 +156,7 @@ module Selfbot::Defs
         t.headings = query.fields
         t.rows = query.entries.map(&:values)
         t.style = {border_top: false, border_bottom: false}
-      end
+      end.to_s
 
       result.gsub!(/^[|+]|[|+]$/, '')
       "```\n#{result[0..1950]}\n```"
