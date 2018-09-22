@@ -34,14 +34,4 @@ create table discord_log (
     primary key(cid, mid)
 );
 
-create table discord_file (
-    cid bigint not null,
-    mid bigint not null,
-    file varchar not null,
-    url varchar not null,
-    size integer not null,
-    primary key (cid, mid)
-);
-
 create index ix_discord_log_user on discord_log (uid);
-

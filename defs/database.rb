@@ -14,6 +14,12 @@ module Selfbot::Defs
   TAG_EDIT = %(update tagstore set content = $2 where lower(tag) = $1)
   TAG_REMOVE = %(delete from tagstore where lower(tag) = $1 or owner = $2)
 
+  ## DB: discord_log ##
+
+  MSGLOG_NEW = %(insert into discord_log (cid, mid, uid, mtime, mdata) values ($1, $2, $3, $4, $5))
+  MSGLOG_EDIT = %(update discord_log set etime = $3, edata = $4 where cid = $1 and mid = $2)
+  MSGLOG_DELETE = %(update discord_log set del = true where cid = $1 and mid = $2)
+
   ## DBC Object Extensions ##
   
   module Selfbot::DBC

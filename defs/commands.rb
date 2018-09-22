@@ -90,9 +90,9 @@ module Selfbot::Defs
     "```\n#{result}\n```"
   end
 
-  ## CMD: mkjunk ##
+  ## CMD: junk ##
 
-  $cmd.register(:mkjunk,
+  $cmd.register(:junk,
   arg_count: 1..1, arg_types: [:integer]) do |_, count|
     %x(mkjunk #{count} 2>&1)
   end
