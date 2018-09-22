@@ -12,8 +12,8 @@ module Selfbot
       @pg = PG::Connection.open(**config)
       @mutex = Mutex.new
 
-      @pg.type_map_for_results = PG::BasicTypeMapForResults.new(@pg)
       @pg.type_map_for_queries = PG::BasicTypeMapForQueries.new(@pg)
+      @pg.type_map_for_results = PG::BasicTypeMapForResults.new(@pg)
     end
 
     def query(sql, args = [], &blk)

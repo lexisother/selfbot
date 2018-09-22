@@ -42,6 +42,11 @@ module Selfbot
   class EvalContext
     attr_reader :event, :global, :print_buffer
 
+    # Lua-compatible `global` alias
+    def _G
+      @global
+    end
+
     def initialize(event, global)
       @event, @global = event, global
     end
@@ -49,7 +54,7 @@ module Selfbot
     def drain_print_buffer
       ret = @print_buffer
       @print_buffer = nil
-      ret.chomp!
+      ret.chomp
     end
 
     def has_print_buffer?
@@ -82,11 +87,18 @@ module Selfbot
         when Symbol, String
           "```#{fmt}\n#{text}\n```"
         else
-          text
+          text.to_s
       end
 
-      sleep(CONFIG[:send_wait])
-      @event.channel.send_message(text: text.to_s)
+      sleep(Selfbot::CONFIG.dig(:system, :reply_wait))
+      @event.channel.send_message(text: text)
+    end
+
+    def embed(**args)
+      text = args.delete(:message).to_s
+
+      sleep(Selfbot::CONFIG.dig(:system, :reply_wait))
+      @event.channel.send_message(text: text, embed: args)
     end
   end
 end

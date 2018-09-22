@@ -7,7 +7,7 @@ module Selfbot::Defs
 
   $cmd.register(:thonk, arg_count: 0..0) do |_|
     ns, nr = Selfbot::CONFIG[:thonk]
-    thonk = THONKS.sample(ns).map {|x| x * rand(nr)}.join
+    thonk = THONKS.sample(ns).map {|x| x * rand(nr) }.join
 
     "***T H O N K . . .*** #{thonk}"
   end
@@ -36,7 +36,7 @@ module Selfbot::Defs
     "out" => "<:getout:435188560283435010>",
     "nani" => "<:nani:412103942646923264>",
 
-    "" => proc {|x| "#{x}"},
+    "" => proc {|x| "#{x}" },
   }
 
   $cmd.register(:letters,
@@ -97,6 +97,14 @@ module Selfbot::Defs
     %x(mkjunk #{count} 2>&1)
   end
 
+  ## CMD: wetquote ##
+
+  $cmd.register(:wetquote,
+  arg_count: 0..1, arg_types: [:integer]) do |_, count|
+    count = [1, count || 1].max
+    %x(wetquote -c #{count})
+  end
+
   ## CMD: eval ##
 
   EVAL_GLOBALS = Selfbot::EvalStorage.new
@@ -117,8 +125,8 @@ module Selfbot::Defs
       result = "```\n#{context.drain_print_buffer}\n``` #{result || ''}"
     end
 
-    if result && result.length > 1900
-      result = result[0..1900] + "\n```"
+    if result && result.length > 1950
+      result = result[0..1950] + "\n```"
     end
 
     result
@@ -133,7 +141,30 @@ module Selfbot::Defs
     result = %x(fish -c #{argstr.shellescape} 2>&1)
     next if result =~ /^\s*$/
 
-    "```\n#{result[0..1900]}\n```"
+    "```\n#{result[0..1950]}\n```"
+  end
+
+  ## CMD: sql ##
+
+  $cmd.register(:sql,
+  arg_mode: :concat) do |_, argstr|
+    require 'terminal-table'
+
+    begin
+      query = $dbc.query(argstr)
+      result = Terminal::Table.new do |t|
+        t.headings = query.fields
+        t.rows = query.entries.map(&:values)
+        t.style = {border_top: false, border_bottom: false}
+      end
+
+      result.gsub!(/^[|+]|[|+]$/, '')
+      "```\n#{result[0..1950]}\n```"
+
+    rescue PG::Error => exc
+      msg, *rest = exc.message.split("\n")
+      "\u{274C} #{msg}\n```\n#{rest.join("\n")}\n```"
+    end
   end
 
   ## CMD: avatar ##
@@ -152,8 +183,91 @@ module Selfbot::Defs
 
   ## CMD: status ##
 
+  STATUS_FIELDS = [
+    :type, :name, :url,
+    :details, :state,
+    :application,
+    :small_image, :small_text,
+    :large_image, :large_text,
+    :start_time, :end_time,
+  ].freeze
+
   $cmd.register(:status,
   arg_count: 1..1, arg_types: [:yaml]) do |event, data|
+    "NOT IMPLEMENTED"
+  end
 
+  ## CMD: pick ##
+
+  $cmd.register(:pick,
+  arg_count: 1..-1, arg_types: [:string]) do |event, *args|
+    %(\u{1F3B2} The Computer™ has picked "#{args.shuffle.sample}")
+  end
+
+  ## CMD: tag ##
+
+  $cmd.register(:tag,
+  arg_count: 1..-1, arg_types: [:string]) do |event, tag, *args|
+    next "\u{274C} Tag name cannot be empty" if tag.empty?
+
+    result = $dbc.query(TAG_FIND, [tag.downcase])
+    if result.none?
+      %(\u{274C} Tag "#{tag}" not found)
+    else
+      result.first['content']
+    end
+  end
+
+  ## CMD: tag? ##
+
+  $cmd.register(:"tag?",
+  arg_count: 0..1, arg_types: [:iregexp]) do |event, filter|
+    result = $dbc.query(TAG_LIST, [event.bot.profile.id])
+
+    tags = result.map {|x| x['tag'] }
+    tags.select! {|x| x =~ filter } if filter
+    tags.sort!
+
+    "```\n#{tags.join("\t")}\n```"
+  end
+
+  $cmd.register(:"tag+",
+  arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
+    next "\u{274C} Tag name cannot be empty" if tag.empty?
+
+    begin
+      $dbc.query(TAG_ADD, [tag, event.bot.profile.id, data])
+      %(\u{2705} Added tag "#{tag}")
+    rescue PG::UniqueViolation
+      %(\u{274C} Tag "#{tag}" already exists)
+    end
+  end
+
+  $cmd.register(:"tag=",
+  arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
+    next "\u{274C} Tag name cannot be empty" if tag.empty?
+
+    begin
+      result = $dbc.query(TAG_EDIT, [tag, data])
+      if result.cmd_tuples > 0
+        %(\u{2705} Updated tag "#{tag}")
+      else
+        %(\u{274C} Tag "#{tag}" not found)
+      end
+    end
+  end
+
+  $cmd.register(:"tag-",
+  arg_count: 1..1, arg_types: [:string]) do |event, tag|
+    next "\u{274C} Tag name cannot be empty" if tag.empty?
+
+    begin
+      result = $dbc.query(TAG_REMOVE, [tag, nil])
+      if result.cmd_tuples > 0
+        %(\u{2705} Removed tag "#{tag}")
+      else
+        %(\u{274C} Tag "#{tag}" not found)
+      end
+    end
   end
 end

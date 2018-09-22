@@ -8,11 +8,11 @@ module Selfbot::Defs
 
   ## DB: tagstore ##
 
-  TAG_FIND = %(select content from tagstore where tag = $1)
+  TAG_FIND = %(select content from tagstore where lower(tag) = $1)
   TAG_LIST = %(select tag from tagstore where owner = $1)
   TAG_ADD = %(insert into tagstore (tag, owner, content) values ($1, $2, $3))
-  TAG_EDIT = %(update tagstore set content = $2 where tag = $1)
-  TAG_REMOVE = %(delete from tagstore where tag = $1 or owner = $2)
+  TAG_EDIT = %(update tagstore set content = $2 where lower(tag) = $1)
+  TAG_REMOVE = %(delete from tagstore where lower(tag) = $1 or owner = $2)
 
   ## DBC Object Extensions ##
   

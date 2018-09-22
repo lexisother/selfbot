@@ -1,5 +1,5 @@
 $bot.add_event(:ready, :presence) do |event|
-  event.bot.update_presence(game: Selfbot::CONFIG[:presence])
+  event.bot.update_presence(status: :dnd, game: "trash")
 end
 
 $bot.add_event(:unhandled, :_debug_) do |event|
