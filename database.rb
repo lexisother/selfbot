@@ -16,8 +16,8 @@ module Selfbot
       @pg.type_map_for_queries = PG::BasicTypeMapForQueries.new(@pg)
     end
 
-    def query(sql, *args)
-      @mutex.synchronize { @pg.exec_params(sql, args) }
+    def query(sql, args = [], &blk)
+      @mutex.synchronize { @pg.exec_params(sql, args, &blk) }
     end
 
     def transaction

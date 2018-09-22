@@ -50,12 +50,10 @@ module Selfbot::Defs
 end
 
 begin
-  # $bot.connect(false)
-  require 'pry'
-  pry
+  $bot.connect(false)
 rescue Interrupt
   puts("Received Ctrl-C, exiting...")
 end
 
-# $bot.disconnect
+$bot.disconnect
 $dbc.disconnect
