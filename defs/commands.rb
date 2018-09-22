@@ -1,8 +1,20 @@
 module Selfbot::Defs
+
   ## CMD: thonk ##
 
   THONKS = %w[
-    TODO
+    <:thonkang:349702669910147072> <:thankong:349702642425004032>
+    <:thunkeng:364556235498061834> <:thwonknag:364556224609386496>
+    <:thonkery:416978735791865857> <:thonkwoke:364556414292852739>
+    <:thowonkang:364556266309287936> <:megathink:412085787849523200>
+    <:blob_thonk:390657789606887424> <:blob_thonkwoke:412140519150452736>
+    <:think_eyes:412085787908112384> <:tunk:426355695433285647>
+    <:tonk:428138276621123587> <:tinkung:453389313716125707>
+    <:tink:421306955194171402> <:thonkin:438354764720242689>
+    <:thinking2:459788749434388510> <:thinkies:422024407368597505>
+    <:thenkeng:433342330549043202> <:blob_thonkang:435181996495470602>
+    <:blob_thinkcool:431648649135652864> <:blob_thinkeyes:431648649349431306>
+    <:thankang:468827164838461450>
   ]
 
   $cmd.register(:thonk, arg_count: 0..0) do |_|
@@ -105,6 +117,29 @@ module Selfbot::Defs
     %x(wetquote -c #{count})
   end
 
+  ## CMD: uwut ##
+
+  UWUT = %w[
+    :uwut:395831180156731392 :uwut:371711644897771520
+    :uwut1:488077317999165441 :uwut2:488077336185536523
+    :uwut3:488077349951111171 :uwut4:488077359799468087
+    :uwut5:488077370478034945 :uwut6:488077380045242368
+    :uwut7:488077398345121795 :uwut8:488077473196802089
+  ]
+
+  $cmd.register(:uwut,
+  arg_count: 1..1, arg_types: [:integer]) do |event, msgid|
+    message = event.channel.message(msgid)
+    next "\u{274C} Invalid message ID" unless message
+
+    UWUT.each do |uwut|
+      message.add_reaction(uwut)
+      sleep(0.33)
+    end
+
+    nil
+  end
+
   ## CMD: eval ##
 
   EVAL_GLOBALS = Selfbot::EvalStorage.new
@@ -202,6 +237,14 @@ module Selfbot::Defs
   $cmd.register(:pick,
   arg_count: 1..-1, arg_types: [:string]) do |event, *args|
     %(\u{1F3B2} The Computer™ has picked "#{args.shuffle.sample}")
+  end
+
+  ## CMD: reflink ##
+
+  $cmd.register(:reflink,
+  arg_count: 2..2, arg_types: [:channel, :time]) do |event, channel, time|
+    snowflake = MijDiscord::Data::IDObject.synthesize(time)
+    %(https://discordapp.com/channels/#{channel.id}/#{channel.id}/#{snowflake})
   end
 
   ## CMD: tag ##

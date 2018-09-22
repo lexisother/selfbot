@@ -84,7 +84,7 @@ module Selfbot
       return unless string.start_with?(@prefix)
 
       string = string[@prefix.length .. -1].strip
-      match = string.match(/\A(\S+)(?:\s+(.+))?\z/)
+      match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
       name, argstr = match[1], match[2] || ''
 
       if (cmd = @commands[name.to_sym])
