@@ -1,0 +1,28 @@
+require 'pg'
+require 'thread'
+
+module Selfbot
+  module DBC
+    # Database adapter extensions
+  end
+
+  class Database
+    include DBC
+
+    def initialize(**config)
+      @pg = PG::Connection.open(**config)
+      @mutex = Mutex.new
+
+      @pg.type_map_for_results = PG::BasicTypeMapForResults.new(@pg)
+      @pg.type_map_for_queries = PG::BasicTypeMapForQueries.new(@pg)
+    end
+
+    def query(sql, *args)
+      @mutex.synchronize { @pg.exec_params(sql, args) }
+    end
+
+    def transaction
+      @mutex.synchronize { @pg.transaction { yield self } }
+    end
+  end
+end
