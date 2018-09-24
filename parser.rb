@@ -93,6 +93,7 @@ module Selfbot::Parser
         when :user
           server.bot.parse_mention(item, nil, type: type)
         when :member, :channel, :role, :emoji
+          type = (type == :member) ? :user : type
           server.bot.parse_mention(item, server, type: type)
         when :invite
           server.bot.parse_invite_code(item)

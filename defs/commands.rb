@@ -216,6 +216,49 @@ module Selfbot::Defs
     args.map {|x| x&.icon_url || '(Invalid Emoji)' }.join("\n")
   end
 
+  ## CMD: uinfo ##
+
+  UINFO_ROLES_MAX = 5
+
+  $cmd.register(:uinfo,
+  arg_count: 1..2, arg_types: [ [:member, :user], :string ]) do |event, user, opts|
+    opts ||= 'iucajnr'
+    output = []
+
+    output << "ID: `#{user.id}`" if opts =~ /i/i
+    output << "Name: ``#{user.distinct}``" if opts =~ /u/i
+    output << "Created: `#{user.creation_time}`" if opts =~ /c/i
+
+    if opts =~ /a/i
+      large = (opts =~ /\+/) ? '?size=1024' : ''
+      output << "Avatar: #{user.avatar_url}#{large}"
+    end
+
+    if user.is_a?(MijDiscord::Data::Member)
+      output << ("—" * 15) if output.any? && opts =~ /[jnr]/i
+      output << "Joined: `#{user.joined_at}`" if opts =~ /j/i
+
+      if opts =~ /n/i
+        nickname = user.nickname || '<none>'
+        output << "Nickname: ``#{nickname}``"
+      end
+
+      if opts =~ /r/i
+        roles = user.roles
+                .sort {|x,y| y.position <=> x.position }
+                .take(UINFO_ROLES_MAX)
+                .map {|x| "``#{x.name}``" }
+
+        rest = user.roles.length - UINFO_ROLES_MAX
+        roles << "#{rest} more…" if rest > 0
+
+        output << "Roles: #{roles.join(', ')}"
+      end
+    end
+
+    output.join("\n")
+  end
+
   ## CMD: status ##
 
   STATUS_FIELDS = [
@@ -274,6 +317,8 @@ module Selfbot::Defs
     "```\n#{tags.join("\t")}\n```"
   end
 
+  ## CMD: tag+ ##
+
   $cmd.register(:"tag+",
   arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
@@ -285,6 +330,8 @@ module Selfbot::Defs
       %(\u{274C} Tag "#{tag}" already exists)
     end
   end
+
+  ## CMD: tag= ##
 
   $cmd.register(:"tag=",
   arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
@@ -300,6 +347,8 @@ module Selfbot::Defs
     end
   end
 
+  ## CMD: tag- ##
+
   $cmd.register(:"tag-",
   arg_count: 1..1, arg_types: [:string]) do |event, tag|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
@@ -313,4 +362,5 @@ module Selfbot::Defs
       end
     end
   end
+
 end
