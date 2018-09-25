@@ -33,6 +33,7 @@ module Selfbot::Defs
     "!?" => ":interrobang:",
     "!" => ":exclamation:",
     "?" => ":question:",
+    " " => "\u{3000}",
   }
   LETTERS_FUNC = {
     "a" => ":a:", "b" => ":b:",
@@ -58,9 +59,9 @@ module Selfbot::Defs
     argstr.scan(LETTERS_MATCH) do |let, num, misc, func, farg, other|
       result << case true
         when !!let
-          let.gsub(/[a-z]/i) {|x| ":regional_indicator_#{x.downcase}:\u200B"}
+          let.gsub(/[a-z]/i) {|x| ":regional_indicator_#{x.downcase}:\u{200A}"}
         when !!num
-          num.gsub(/[0-9]/) {|x| ":#{LETTERS_NUM[x.to_i]}:"}
+          num.gsub(/[0-9]/) {|x| ":#{LETTERS_NUM[x.to_i]}:\u{200A}"}
         when !!misc
           LETTERS_MISC[misc] || misc
         when !!func
