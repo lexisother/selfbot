@@ -85,7 +85,7 @@ module Selfbot
 
       string = string[@prefix.length .. -1].strip
       match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
-      name, argstr = match[1], match[2] || ''
+      name, argstr = match[1].downcase, match[2] || ''
 
       if (cmd = @commands[name.to_sym])
         result = begin
