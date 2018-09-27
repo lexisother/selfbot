@@ -113,9 +113,15 @@ module Selfbot::Defs
   ## CMD: wetquote ##
 
   $cmd.register(:wetquote,
-  arg_count: 0..1, arg_types: [:integer]) do |_, count|
+  arg_count: 0..2, arg_types: [:integer, :string]) do |_, count, cow|
     count = [1, count || 1].max
-    %x(wetquote -c #{count})
+    if cow
+      cow = cow.shellescape
+      result = %x(wetquote -rc #{count} | cowsay -f #{cow} 2>&1)
+      %(```\n#{result}\n```)
+    else
+      %x(wetquote -c #{count})
+    end
   end
 
   ## CMD: uwut ##
