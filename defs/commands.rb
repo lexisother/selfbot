@@ -345,7 +345,7 @@ module Selfbot::Defs
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
     begin
-      result = $dbc.query(TAG_EDIT, [tag, data])
+      result = $dbc.query(TAG_EDIT, [tag.downcase, data])
       if result.cmd_tuples > 0
         %(\u{2705} Updated tag "#{tag}")
       else
@@ -361,7 +361,7 @@ module Selfbot::Defs
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
     begin
-      result = $dbc.query(TAG_REMOVE, [tag, nil])
+      result = $dbc.query(TAG_REMOVE, [tag.downcase, nil])
       if result.cmd_tuples > 0
         %(\u{2705} Removed tag "#{tag}")
       else
