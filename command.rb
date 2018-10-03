@@ -83,6 +83,12 @@ module Selfbot
       string = event.message.content
       return unless string.start_with?(@prefix)
 
+      ignore_srv = Selfbot::CONFIG.dig(:system, :ignore_srv)
+      return if ignore_srv.include?(event.server.id)
+
+      ignore_chan = Selfbot::CONFIG.dig(:system, :ignore_chan)
+      return if ignore_chan.include?(event.channel.id)
+
       string = string[@prefix.length .. -1].strip
       match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
       name, argstr = match[1].downcase, match[2] || ''
