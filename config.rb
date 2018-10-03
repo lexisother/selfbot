@@ -19,6 +19,7 @@ module Selfbot
       owners: [243061915281129472],
 
       ignore_srv: [
+        86919947267104768,
       ],
       ignore_chan: [
       ],
