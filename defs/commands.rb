@@ -17,9 +17,12 @@ module Selfbot::Defs
     <:thankang:468827164838461450>
   ]
 
-  $cmd.register(:thonk, arg_count: 0..0) do |_|
+  $cmd.register(:thonk,
+  arg_count: 0..1) do |_, flag|
     ns, nr = Selfbot::CONFIG[:thonk]
     thonk = THONKS.sample(ns).map {|x| x * rand(nr) }.join
+
+    next thonk if flag =~ /s/i
 
     "***T H O N K . . .*** #{thonk}"
   end
