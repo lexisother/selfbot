@@ -22,7 +22,7 @@ module Selfbot::Defs
     ns, nr = Selfbot::CONFIG[:thonk]
     thonk = THONKS.sample(ns).map {|x| x * rand(nr) }.join
 
-    next thonk if flag =~ /s/i
+    next thonk if flag =~ /c/i
 
     "***T H O N K . . .*** #{thonk}"
   end
