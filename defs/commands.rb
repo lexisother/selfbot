@@ -282,7 +282,15 @@ module Selfbot::Defs
 
   $cmd.register(:status,
   arg_count: 1..1, arg_types: [:yaml]) do |event, data|
-    "NOT IMPLEMENTED"
+    require 'deep_merge'
+    require 'yaml'
+
+    game = event.bot.profile.game
+    game = Hash[STATUS_FIELDS.each {|x| [x, game.send(x)] }]
+    game.deep_merge!(data)
+
+    $dbc.keyvalue(set: 'rich_presence', value: YAML.dump(game))
+    event.bot.update_presence(game: game)
   end
 
   ## CMD: pick ##
