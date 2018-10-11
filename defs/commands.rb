@@ -19,12 +19,16 @@ module Selfbot::Defs
 
   $cmd.register(:thonk,
   arg_count: 0..1) do |_, flag|
-    ns, nr = Selfbot::CONFIG[:thonk]
-    thonk = THONKS.sample(ns).map {|x| x * rand(nr) }.join
+    count, dist = Selfbot::CONFIG[:thonk]
 
-    next thonk if flag =~ /c/i
+    count = $1.to_i if flag =~ /d(\d+)/i
+    dist = ($1.to_i .. dist.last) if flag =~ /l(\d+)/i
+    dist = (dist.first .. $1.to_i) if flag =~ /h(\d+)/i
 
-    "***T H O N K . . .*** #{thonk}"
+    thonk = THONKS.sample(count).map {|x| x * rand(dist) }.join
+
+    flag =~ /c/i ?
+      thonk : "***T H O N K . . .*** #{thonk}"
   end
 
   ## CMD: letters ##
