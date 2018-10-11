@@ -124,10 +124,9 @@ module Selfbot
             text = result.to_s
         end
 
-        event.message.delete if is_del
-
         sleep(Selfbot::CONFIG.dig(:system, :cmd_wait))
         event.channel.send_message(text: text, embed: embed)
+        event.message.delete if is_del
       end
 
       nil
