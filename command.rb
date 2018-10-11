@@ -62,8 +62,9 @@ module Selfbot
   end
 
   class CommandSystem
-    def initialize(prefix)
+    def initialize(prefix, del_cmd: false)
       @prefix, @commands = prefix, {}
+      @del_cmd = del_cmd
     end
 
     def register(name, **params, &block)
@@ -79,8 +80,13 @@ module Selfbot
       @commands.keys
     end
 
-    def execute(event)
-      string = event.message.content
+    def use_proxy(proxy)
+      @proxy = proxy.instance_variable_get(:@commands)
+      nil
+    end
+
+    def execute(event, string = nil)
+      string = event.message.content unless string
       return unless string.start_with?(@prefix)
 
       ignore_srv = Selfbot::CONFIG.dig(:system, :ignore_srv)
@@ -91,9 +97,9 @@ module Selfbot
 
       string = string[@prefix.length .. -1].strip
       match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
-      name, argstr = match[1].downcase, match[2] || ''
+      name, argstr = match[1].downcase.to_sym, match[2] || ''
 
-      if (cmd = @commands[name.to_sym])
+      if (cmd = @commands[name] || @proxy && @proxy[name])
         result = begin
           event = CommandEvent.new(event.bot, event.message, cmd)
           cmd.execute(event, argstr)
@@ -113,6 +119,8 @@ module Selfbot
           else
             text = result.to_s
         end
+
+        event.message.delete if @del_cmd
 
         sleep(Selfbot::CONFIG.dig(:system, :cmd_wait))
         event.channel.send_message(text: text, embed: embed)
