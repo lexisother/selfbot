@@ -13,14 +13,8 @@ require_relative 'database'
 $bot = MijDiscord::Bot.new(**Selfbot::BOTOPTS)
 MijDiscord::LOGGER.level = :info
 
-$cmd = Selfbot::CommandSystem.new(Selfbot::PREFIX_MAIN)
+$cmd = Selfbot::CommandSystem.new(Selfbot::PREFIX_MAIN, Selfbot::PREFIX_DEL)
 $cmd.configure($bot)
-
-if Selfbot::PREFIX_DEL
-  cmd2 = Selfbot::CommandSystem.new(Selfbot::PREFIX_DEL, del_cmd: true)
-  cmd2.configure($bot)
-  cmd2.use_proxy($cmd)
-end
 
 $dbc = Selfbot::Database.new(**Selfbot::DBCOPTS)
 

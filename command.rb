@@ -62,9 +62,9 @@ module Selfbot
   end
 
   class CommandSystem
-    def initialize(prefix, del_cmd: false)
-      @prefix, @commands = prefix, {}
-      @del_cmd = del_cmd
+    def initialize(nprefix, dprefix)
+      @nprefix, @dprefix = nprefix, dprefix
+      @commands = {}
     end
 
     def register(name, **params, &block)
@@ -80,14 +80,18 @@ module Selfbot
       @commands.keys
     end
 
-    def use_proxy(proxy)
-      @proxy = proxy.instance_variable_get(:@commands)
-      nil
-    end
-
     def execute(event, string = nil)
       string = event.message.content unless string
-      return unless string.start_with?(@prefix)
+
+      prefix, is_del = nil
+
+      if @dprefix && string.start_with?(@dprefix)
+        prefix, is_del = @dprefix, true
+      elsif @nprefix && string.start_with?(@nprefix)
+        prefix, is_del = @nprefix, false
+      end
+
+      return unless prefix
 
       ignore_srv = Selfbot::CONFIG.dig(:system, :ignore_srv)
       return if ignore_srv.include?(event.server.id)
@@ -95,11 +99,11 @@ module Selfbot
       ignore_chan = Selfbot::CONFIG.dig(:system, :ignore_chan)
       return if ignore_chan.include?(event.channel.id)
 
-      string = string[@prefix.length .. -1].strip
+      string = string[prefix.length .. -1].strip
       match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
       name, argstr = match[1].downcase.to_sym, match[2] || ''
 
-      if (cmd = @commands[name] || @proxy && @proxy[name])
+      if (cmd = @commands[name])
         result = begin
           event = CommandEvent.new(event.bot, event.message, cmd)
           cmd.execute(event, argstr)
@@ -120,7 +124,7 @@ module Selfbot
             text = result.to_s
         end
 
-        event.message.delete if @del_cmd
+        event.message.delete if is_del
 
         sleep(Selfbot::CONFIG.dig(:system, :cmd_wait))
         event.channel.send_message(text: text, embed: embed)
