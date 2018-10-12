@@ -33,7 +33,7 @@ module Selfbot::Defs
 
   ## CMD: letters ##
 
-  LETTERS_MATCH = /\G([a-z]+)|([0-9]+)|(!?[!?]| )|(?:{(\w*)(?:=([^}]*))?})|(.)/im
+  LETTERS_MATCH = /\G([a-z]+)|([0-9]+)|(!?[!?]| )|(?:{(\w*)(?:=([^}]*))?})|(<[^>]*?>)|(.)/im
   LETTERS_NUM = %w[zero one two three four five six seven eight nine]
   LETTERS_MISC = {
     "!!" => ":bangbang:",
@@ -55,15 +55,13 @@ module Selfbot::Defs
     "del" => "<:delet:426906577761468417>",
     "out" => "<:getout:435188560283435010>",
     "nani" => "<:nani:412103942646923264>",
-
-    "" => proc {|x| "#{x}" },
   }
 
   $cmd.register(:letters,
   arg_mode: :concat) do |_, argstr|
     result = String.new
 
-    argstr.scan(LETTERS_MATCH) do |let, num, misc, func, farg, other|
+    argstr.scan(LETTERS_MATCH) do |let, num, misc, func, farg, raw, other|
       result << case true
         when !!let
           let.gsub(/[a-z]/i) {|x| ":regional_indicator_#{x.downcase}:\u{200A}"}
@@ -74,7 +72,7 @@ module Selfbot::Defs
         when !!func
           func = LETTERS_FUNC[func.downcase] || "{#{func}}"
           func.respond_to?(:call) ? func.call(farg) : func
-        else other
+        else raw || other
       end
     end
 
