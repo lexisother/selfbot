@@ -113,6 +113,9 @@ module Selfbot
           "```\n(#{exc.class})\n#{exc.message}\n```"
         end
 
+        sleep(Selfbot::CONFIG.dig(:system, :cmd_wait))
+        event.message.delete if is_del
+
         text, embed = '', nil
 
         case result
@@ -124,9 +127,7 @@ module Selfbot
             text = result.to_s
         end
 
-        sleep(Selfbot::CONFIG.dig(:system, :cmd_wait))
         event.channel.send_message(text: text, embed: embed)
-        event.message.delete if is_del
       end
 
       nil
