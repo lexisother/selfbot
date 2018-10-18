@@ -35,3 +35,4 @@ create table discord_log (
 );
 
 create index ix_discord_log_user on discord_log (uid);
+create index ix_discord_log_channel on discord_log (cid);
