@@ -5,6 +5,7 @@ module Selfbot
   require_relative 'config'
 end
 
+require_relative 'utils'
 require_relative 'parser'
 require_relative 'evalutils'
 require_relative 'command'

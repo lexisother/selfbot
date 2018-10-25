@@ -33,7 +33,7 @@ module Selfbot
         raise CommandError, "Too many arguments (expected #{@arg_count.last}, got #{args.length})"
       end
 
-      args = Selfbot::Parser::TypedArguments.call(args, @arg_types, event.server)
+      args = Selfbot::Parser::TypedArguments.call(args, @arg_types, event)
 
       owners = ::Selfbot::CONFIG.dig(:system, :owners)
       if owners && @owner_only && !owners.include?(event.user.id)
