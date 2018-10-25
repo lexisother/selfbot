@@ -11,12 +11,12 @@ module Selfbot::Parser
   end
 
   module ArgumentWords
-    MATCHER = /\G\s*(?>```(.*?)```|([^\s"`]+)|`([^`]*)`|("")|"((?:[^"]|"")*)"|(\S))(\s|\z)?/m
+    MATCHER = /\G\s*(?>```(.*?)```|([^\s"`]+)|``(.*?)``|`([^`]*)`|("")|"((?:[^"]|"")*)"|(\S))(\s|\z)?/m
 
     def self.call(input)
       words, accum = [], ''
 
-      input.scan(MATCHER) do |blk, rw, bw, esc, qw, crap, sep|
+      input.scan(MATCHER) do |blk, rw, bw2, bw, esc, qw, crap, sep|
         raise Selfbot::CommandError, 'Mismatched quotes or backticks' if crap
 
         if blk
@@ -27,7 +27,7 @@ module Selfbot::Parser
 
           words << blk
         else
-          accum << (rw || bw || (esc || qw)&.gsub('""', '"'))
+          accum << (rw || bw2 || bw || (esc || qw)&.gsub('""', '"'))
 
           if sep
             words << accum
