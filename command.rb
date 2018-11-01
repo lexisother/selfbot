@@ -1,4 +1,31 @@
 module Selfbot
+  # Helper DSL for defining command arguments
+  module Defs
+    class CmdArgs
+      attr_accessor :instance
+
+      def count(count)
+        @instance[:count] = count
+      end
+
+      def mode(mode)
+        @instance[:mode] = mode
+      end
+
+      def types(*types)
+        @instance[:types] = types
+      end
+    end
+
+    def self.CmdArgs(&block)
+      params = CmdArgs.new
+      params.instance = {}
+
+      params.instance_exec(&block) if block
+      CommandArgs.new(**params.instance)
+    end
+  end
+
   class CommandEvent < MijDiscord::Events::Message
     attr_reader :command
 
@@ -11,53 +38,54 @@ module Selfbot
 
   class CommandError < RuntimeError; end
 
-  class Command
-    attr_reader :name, :block
-    attr_reader :arg_count, :arg_mode, :arg_types
-    attr_reader :owner_only
+  class CommandArgs
+    attr_reader :mode, :count, :types
 
-    def initialize(name, params = {}, &block)
-      @name, @block = name, block
-
-      @arg_count = params[:arg_count] || (0..-1)
-      @arg_mode = params[:arg_mode] || :words
-      @arg_types = params[:arg_types]
-
-      @owner_only = !!params[:owner_only]
+    def initialize(**params)
+      @mode = params[:mode] || :words
+      @count = params[:count] || (0..-1)
+      @types = params[:types] || nil
     end
 
-    def call(event, args)
-      if args.length < @arg_count.first
-        raise CommandError, "Too few arguments (expected #{@arg_count.first}, got #{args.length})"
-      elsif @arg_count.last > -1 && args.length > @arg_count.last
-        raise CommandError, "Too many arguments (expected #{@arg_count.last}, got #{args.length})"
+    def call(event, argstr)
+      args = case @mode
+        when :concat
+          Selfbot::Parser::ArgumentConcat
+        when :words
+          Selfbot::Parser::ArgumentWords
+        else
+          @mode.respond_to?(:call) ?
+            @mode : (raise ArgumentError, 'Bad argument handler')
+      end.call(argstr)
+
+      if args.length < @count.first
+        raise CommandError, "Too few arguments (expected #{@count.first}, got #{args.length})"
+      elsif @count.last > -1 && args.length > @count.last
+        raise CommandError, "Too many arguments (expected #{@count.last}, got #{args.length})"
       end
 
-      args = Selfbot::Parser::TypedArguments.call(args, @arg_types, event)
+      Selfbot::Parser::TypedArguments.call(args, @types, event)
+    end
+  end
 
-      owners = Selfbot::CONFIG.dig(:system, :owners)
-      if owners && @owner_only && !owners.include?(event.user.id)
-        raise CommandError, 'Command is restricted to owner only'
+  class Command
+    attr_reader :name, :block, :args
+
+    def initialize(name, args = nil, **params, &block)
+      @name, @args, @block = name, args, block
+
+      @owner_only = !!params[:owner_only]
+
+      if @args.nil?
+        @args = CommandArgs.new(
+          mode: params[:arg_mode],
+          count: params[:arg_count],
+          types: params[:arg_types])
       end
-
-      @block.call(event, *args)
     end
 
     def execute(event, argstr)
-      args = case @arg_mode
-        when :concat
-          Selfbot::Parser::ArgumentConcat.call(argstr)
-        when :words
-          Selfbot::Parser::ArgumentWords.call(argstr)
-        else
-          if @arg_mode.respond_to?(:call)
-            @arg_mode.call(argstr)
-          else
-            raise CommandError, 'Invalid argument handler'
-          end
-      end
-
-      call(event, args)
+      @block.call(event, *@args.call(event, argstr))
     end
   end
 
@@ -67,17 +95,17 @@ module Selfbot
       @commands = {}
     end
 
-    def register(name, **params, &block)
+    def register(name, args: nil, **params, &block)
       name = name.to_sym
-      @commands[name] = Command.new(name, params, &block)
+      @commands[name] = Command.new(name, args, **params, &block)
     end
 
     def unregister(name)
       @commands.delete(name.to_sym)
     end
 
-    def commands
-      @commands.keys
+    def commands(name)
+      name.nil? ? @commands.keys : @commands[name.to_sym]
     end
 
     def execute(event, string = nil)
