@@ -35,7 +35,7 @@ module Selfbot
 
       args = Selfbot::Parser::TypedArguments.call(args, @arg_types, event)
 
-      owners = ::Selfbot::CONFIG.dig(:system, :owners)
+      owners = Selfbot::CONFIG.dig(:system, :owners)
       if owners && @owner_only && !owners.include?(event.user.id)
         raise CommandError, 'Command is restricted to owner only'
       end
@@ -135,8 +135,8 @@ module Selfbot
 
     def configure(bot)
       bot.add_event(:create_message,
-      include: %r(\A#{@prefix}\S+),
-      user: Selfbot::BOTOPTS[:client_id]) {|e| execute(e) }
+      user: Selfbot::BOTOPTS[:client_id],
+      include: %r(\A#{@prefix}\S+)) {|e| execute(e) }
     end
   end
 end
