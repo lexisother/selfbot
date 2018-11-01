@@ -3,6 +3,8 @@ require 'mij-discord'
 module Selfbot
   # Load config before anything else
   require_relative 'config'
+
+  module Defs; end
 end
 
 require_relative 'utils'

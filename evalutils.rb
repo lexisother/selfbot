@@ -69,6 +69,10 @@ module Selfbot
 
     ## User functions below
 
+    def CmdArgs(&block)
+      Selfbot::Defs::CmdArgs(&block)
+    end
+
     def print(*args)
       @print_buffer ||= String.new
       @print_buffer << args.join
