@@ -85,7 +85,7 @@ module Selfbot
           @flag_parser.parse!(args)
 
           @flags.each do |flag|
-            key, type, default = flag[:key], flag[:type]
+            key, type = flag[:key], flag[:type]
             value = @flag_data.fetch(key, flag[:value])
 
             # Kludge
@@ -105,7 +105,7 @@ module Selfbot
 
         # Disgusting hack!!! Rewrite later.
         # Reconstructs remaining arguments with original spacing
-        argstr = args.shift
+        argstr = args.shift || ''
         spaces.shift(args_len - args.length)
         spaces.zip(args).each do |s, a|
           argstr << s << a
