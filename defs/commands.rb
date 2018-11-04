@@ -92,19 +92,21 @@ module Selfbot::Defs
 
   ## CMD: cowsay ##
 
-  $cmd.register(:cowsay,
-  arg_mode: :concat) do |_, argstr|
-    if argstr == '*?'
-      result = %x(cowsay -l | sed "1 d").split(/\s+/).join(' ')
+  $cmd.register(:cowsay, args: CmdArgs do
+    mode :concat
 
+    flag :list, '-l'
+    flag :cow, '-fX', nil, 'default'
+  end) do |_, opts, argstr|
+    require 'shellwords'
+
+    if opts[:list]
+      result = %x(cowsay -l | sed "1 d").split(/\s+/).join(' ')
       next "```\n#{result}\n```"
     end
 
-    match = argstr.match(/\*(\S+)\s+(.+)/)
-    params = match ? match[1..2] : ["default", argstr]
-    fmt, text = params.map(&:shellescape)
-    result = %x(echo #{text} | cowsay -n -f #{fmt} 2>&1)
-
+    argstr = argstr.shellescape
+    result = %x(echo #{argstr} | cowsay -n -f #{opts[:cow]} 2>&1)
     "```\n#{result}\n```"
   end
 
@@ -156,14 +158,17 @@ module Selfbot::Defs
 
   EVAL_GLOBALS = Selfbot::EvalStorage.new
 
-  $cmd.register(:eval,
-  arg_mode: :concat) do |event, argstr|
+  $cmd.register(:eval, args: CmdArgs do
+    mode :concat
+
+    flag :quiet, '-q'
+  end) do |event, opts, argstr|
     argstr = argstr.strip.gsub(/\A\w+\n/i, '')
     context = Selfbot::EvalContext.new(event, EVAL_GLOBALS)
     status, value = context.protected_eval(argstr)
 
     result = if status
-      argstr.end_with?(";") ? nil : "```rb\n#{value.inspect}\n```"
+      opts[:quiet] ? nil : "```rb\n#{value.inspect}\n```"
     else
       "```\n(#{value.class})\n#{value.message}\n```"
     end
@@ -181,12 +186,15 @@ module Selfbot::Defs
 
   ## CMD: sh ##
 
-  $cmd.register(:sh,
-  arg_mode: :concat) do |_, argstr|
+  $cmd.register(:sh, args: CmdArgs do
+    mode :concat
+
+    flag :quiet, '-q'
+  end) do |_, opts, argstr|
     require 'shellwords'
 
     result = %x(fish -c #{argstr.shellescape} 2>&1)
-    next if result =~ /^\s*$/
+    next if opts[:quiet] || result =~ /^\s*$/
 
     "```\n#{result[0..1950]}\n```"
   end
@@ -232,30 +240,46 @@ module Selfbot::Defs
 
   UINFO_ROLES_MAX = 5
 
-  $cmd.register(:uinfo,
-  arg_count: 1..2, arg_types: [ [:member, :user], :string ]) do |event, user, opts|
-    opts ||= 'iucajnr'
+  $cmd.register(:uinfo, args: CmdArgs do
+    count 1..1
+    types [:member, :user]
+
+    flag :id, '-i'
+    flag :un, '-u'
+    flag :ct, '-c'
+    flag :av, '-a'
+    flag :usr, '-U'
+
+    flag :nk, '-n'
+    flag :jt, '-j'
+    flag :rl, '-r'
+    flag :mbr, '-M'
+
+    flag :big, '-A'
+  end) do |event, opts, user|
     output = []
 
-    output << "ID: `#{user.id}`" if opts =~ /i/i
-    output << "Name: ``#{user.distinct}``" if opts =~ /u/i
-    output << "Created: `#{user.creation_time}`" if opts =~ /c/i
+    output << "ID: `#{user.id}`" if opts.try_keys(:id, :usr)
+    output << "Name: ``#{user.distinct}``" if opts.try_keys(:un, :usr)
+    output << "Created: `#{user.creation_time}`" if opts.try_keys(:ct, :usr)
 
-    if opts =~ /a/i
-      large = (opts =~ /\+/) ? '?size=1024' : ''
+    if opts.try_keys(:av, :usr)
+      large = opts[:big] ? '?size=1024' : ''
       output << "Avatar: #{user.avatar_url}#{large}"
     end
 
     if user.is_a?(MijDiscord::Data::Member)
-      output << ("—" * 15) if output.any? && opts =~ /[jnr]/i
-      output << "Joined: `#{user.joined_at}`" if opts =~ /j/i
+      member_opts = opts.try_keys(:nk, :jt, :rl, :mbr)
 
-      if opts =~ /n/i
+      output << ("—" * 15) if output.any? && member_opts
+      output << "Joined: `#{user.joined_at}`" if opts.try_keys(:jt, :mbr)
+
+      if opts.try_keys(:nk, :mbr)
         nickname = user.nickname || '<none>'
         output << "Nickname: ``#{nickname}``"
       end
 
-      if opts =~ /r/i
+      if opts.try_keys(:rl, :mbr)
         roles = user.roles
                 .sort {|x,y| y.position <=> x.position }
                 .take(UINFO_ROLES_MAX)
@@ -268,7 +292,7 @@ module Selfbot::Defs
       end
     end
 
-    output.join("\n")
+    output.any? ? output.join("\n") : "\u{274C} No options specified"
   end
 
   ## CMD: status ##

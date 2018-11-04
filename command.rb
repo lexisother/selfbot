@@ -1,3 +1,5 @@
+require 'optparse'
+
 module Selfbot
   # Helper DSL for defining command arguments
   module Defs
@@ -14,6 +16,16 @@ module Selfbot
 
       def types(*types)
         @instance[:types] = types
+      end
+
+      def flag(key, option, type = nil, value = nil)
+        flags = (@instance[:flags] ||= [])
+        flags << {
+          key: key.to_sym,
+          option: option,
+          type: type,
+          value: value,
+        }.freeze
       end
     end
 
@@ -39,15 +51,67 @@ module Selfbot
   class CommandError < RuntimeError; end
 
   class CommandArgs
-    attr_reader :mode, :count, :types
+    attr_reader :mode, :count, :types, :flags
 
     def initialize(**params)
       @mode = params[:mode] || :words
       @count = params[:count] || (0..-1)
       @types = params[:types] || nil
+
+      if (@flags = params[:flags])
+        @flags.freeze
+        @flag_parser = OptionParser.new
+
+        @flags.each do |flag|
+          opt, key = flag[:option], flag[:key]
+          @flag_parser.on(opt) {|val| @flag_data[key] = val }
+        end
+      end
     end
 
     def call(event, argstr)
+      if @flag_parser
+        # Disgusting hack!!! Rewrite later.
+        # "Tokenizes" the string by spaces and preserves them
+        args, spaces = [], []
+        argstr.scan(/(\A|\s+)(\S+)/) do |sp, txt|
+          spaces << sp
+          args << txt
+        end
+        args_len = args.length
+
+        begin
+          @flag_data = {}
+          @flag_parser.parse!(args)
+
+          @flags.each do |flag|
+            key, type, default = flag[:key], flag[:type]
+            value = @flag_data.fetch(key, flag[:value])
+
+            # Kludge
+            next if value.nil? && !@flag_data.key?(key)
+
+            unless type.nil? || value.nil?
+              ok, value = Selfbot::Parser::TypedArguments.parse_item(value, type, event)
+              raise CommandError, "Failed to parse flag '#{key}'" unless ok
+            end
+
+            @flag_data[key] = value
+          end
+        rescue OptionParser::ParseError => exc
+          @flag_data = nil
+          raise CommandError, exc.message
+        end
+
+        # Disgusting hack!!! Rewrite later.
+        # Reconstructs remaining arguments with original spacing
+        argstr = args.shift
+        spaces.shift(args_len - args.length)
+        spaces.zip(args).each do |s, a|
+          argstr << s << a
+        end
+      end
+
       args = case @mode
         when :concat
           Selfbot::Parser::ArgumentConcat
@@ -64,7 +128,14 @@ module Selfbot
         raise CommandError, "Too many arguments (expected #{@count.last}, got #{args.length})"
       end
 
-      Selfbot::Parser::TypedArguments.call(args, @types, event)
+      args = Selfbot::Parser::TypedArguments.call(args, @types, event)
+
+      if @flag_data
+        args.unshift(@flag_data)
+        @flag_data = nil
+      end
+
+      args
     end
   end
 

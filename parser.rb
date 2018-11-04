@@ -48,19 +48,24 @@ module Selfbot::Parser
         type = types[i] || types.last
         next item if type.nil?
 
-        item = parse_item(item, type, context)
+        item = do_parse_item(item, type, context)
         raise Selfbot::CommandError, "Failed to parse argument ##{i+1}" if item.nil?
 
         item == NilClass ? nil : item
       end
     end
 
+    def self.parse_item(item, type, context)
+      item = do_parse_item(item, type, context)
+      item.nil? ? [false] : [true, item == NilClass ? nil : item]
+    end
+
     private
 
-    def self.parse_item(item, type, context)
+    def self.do_parse_item(item, type, context)
       if type.is_a?(Array)
         return type.reduce(nil) do |a,x|
-          a.nil? ? parse_item(item, x, context) : a
+          a.nil? ? do_parse_item(item, x, context) : a
         end
       end
 
