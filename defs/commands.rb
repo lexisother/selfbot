@@ -25,7 +25,7 @@ module Selfbot::Defs
     dist = ($1.to_i .. dist.last) if flag =~ /l(\d+)/i
     dist = (dist.first .. $1.to_i) if flag =~ /h(\d+)/i
 
-    thonk = THONKS.sample(count).map {|x| x * rand(dist) }.join
+    thonk = THONKS.sample(count).map {|x| x * (rand(dist) || 1) }.join
 
     flag =~ /c/i ?
       thonk : "***T H O N K . . .*** #{thonk}"
@@ -50,10 +50,11 @@ module Selfbot::Defs
     "p" => ":parking:", "ok" => ":ok:",
     "cool" => ":cool:", "new" => ":new:",
 
-    "meme" => "<:meme:424666219686395904>",
     "bonk" => "<:bonk:433341788900818975>",
-    "del" => "<:delet:426906577761468417>",
-    "out" => "<:getout:435188560283435010>",
+    "meme" => "<:meme:522375281504419884>",
+    "del" => "<:delet:522375281760010250>",
+    "out" => "<:getout:522375281693163532>",
+    "smh" => "<:smh:522375351523868672>",
     "nani" => "<:nani:412103942646923264>",
   }
 
@@ -134,7 +135,7 @@ module Selfbot::Defs
   ## CMD: uwut ##
 
   UWUT = %w[
-    :uwut:395831180156731392 :uwut:371711644897771520
+    :uwut:517331842974744586 :uwut:371711644897771520
     :uwut1:488077317999165441 :uwut2:488077336185536523
     :uwut3:488077349951111171 :uwut4:488077359799468087
     :uwut5:488077370478034945 :uwut6:488077380045242368
