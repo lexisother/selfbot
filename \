@@ -171,8 +171,6 @@ module Selfbot
       else
         @nprefix, @dprefix = prefix, nil
       end
-
-      configure(bot) if bot
     end
 
     def register(name, args: nil, **params, &block)

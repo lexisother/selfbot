@@ -8,7 +8,7 @@ module Selfbot
   class Database
     include DBC
 
-    def initialize(**config)
+    def initialize(config = {})
       @pg = PG::Connection.open(**config)
       @mutex = Mutex.new
 

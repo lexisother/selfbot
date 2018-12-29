@@ -3,8 +3,8 @@ module Selfbot::Defs
   ## EV: presence ready ##
 
   $bot.add_event(:ready, :presence) do |event|
-    game = $dbc.keyvalue(get: 'rich_presence') || next
-    event.bot.update_presence(status: :dnd, game: YAML.load(game))
+    # game = $dbc.keyvalue(get: 'rich_presence') || next
+    # event.bot.update_presence(status: :dnd, game: YAML.load(game))
   end
 
   ## EV: _debug_ unhandled ##
@@ -15,12 +15,13 @@ module Selfbot::Defs
 
   ## EV: logging create_message,edit_message,delete_message ##
 
-  LogDBC = Selfbot::Database.new(**Selfbot::DBCOPTS)
+  $bot.ext_add(:logdbc, Selfbot::Database, Selfbot::DBCOPTS)
 
   $bot.add_event(:create_message, :logging) do |event|
     next if event.message.content.empty?
 
-    LogDBC.query(MSGLOG_NEW, [
+    dbc = event.bot.ext(:logdbc)
+    dbc.query(MSGLOG_NEW, [
       event.channel.id,
       event.message.id,
       event.author.id,
@@ -30,7 +31,8 @@ module Selfbot::Defs
   end
 
   $bot.add_event(:edit_message, :logging) do |event|
-    LogDBC.query(MSGLOG_EDIT, [
+    dbc = event.bot.ext(:logdbc)
+    dbc.query(MSGLOG_EDIT, [
       event.channel.id,
       event.message.id,
       event.message.edit_timestamp,
@@ -39,7 +41,8 @@ module Selfbot::Defs
   end
 
   $bot.add_event(:delete_message, :logging) do |event|
-    LogDBC.query(MSGLOG_DELETE, [
+    dbc = event.bot.ext(:logdbc)
+    dbc.query(MSGLOG_DELETE, [
       event.channel.id,
       event.id,
     ])

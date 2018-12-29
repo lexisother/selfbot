@@ -30,7 +30,5 @@ module Selfbot
     thonk: [3, 4..8],
   }
 
-  PREFIX_MAIN = "%"
-
-  PREFIX_DEL = nil
+  CMD_PREFIX = ["%", nil]
 end
