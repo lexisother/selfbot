@@ -161,9 +161,10 @@ module Selfbot::Defs
 
   $cmd.register(:eval, args: CmdArgs do
     mode :concat
+  end) do |event, argstr|
+    # kludge
+    opts = {quiet: argstr.end_with(/(#q|;)/i)}
 
-    flag :quiet, '-q'
-  end) do |event, opts, argstr|
     argstr = argstr.strip.gsub(/\A\w+\n/i, '')
     context = Selfbot::EvalContext.new(event, EVAL_GLOBALS)
     status, value = context.protected_eval(argstr)
@@ -189,9 +190,10 @@ module Selfbot::Defs
 
   $cmd.register(:sh, args: CmdArgs do
     mode :concat
+  end) do |_, argstr|
+    # kludge
+    opts = {quiet: argstr.end_with?('#q')}
 
-    flag :quiet, '-q'
-  end) do |_, opts, argstr|
     require 'shellwords'
 
     result = %x(fish -c #{argstr.shellescape} 2>&1)
