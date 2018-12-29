@@ -7,9 +7,10 @@ module Selfbot
   module Defs; end
 end
 
-require_relative 'utils'
+require_relative 'utils/misc'
+require_relative 'utils/eval'
+
 require_relative 'parser'
-require_relative 'evalutils'
 require_relative 'command'
 require_relative 'database'
 
