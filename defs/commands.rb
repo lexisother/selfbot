@@ -314,7 +314,7 @@ module Selfbot::Defs
       "```yml\n#{yml || 'null'}\n```"
     when :set, :aug
       next "\u{274C} No data provided" if data.nil?
-      status.update(data, merge: cmd == 'aug')
+      status.update(data, merge: cmd == :aug)
       status.submit!
     when :rem
       status.reset
