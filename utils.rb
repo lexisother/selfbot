@@ -13,3 +13,14 @@ class Object
     raise TypeError, "Invalid type #{type} for '#{name}'"
   end
 end
+
+class Hash
+  def try_keys(*keys, default: nil, remove: false)
+    keys.each do |k|
+      next unless key?(k)
+      return remove ? delete(k) : self[k]
+    end
+
+    default
+  end
+end

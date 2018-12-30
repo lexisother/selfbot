@@ -3,8 +3,7 @@ module Selfbot::Defs
   ## EV: presence ready ##
 
   $bot.add_event(:ready, :presence) do |event|
-    # game = $dbc.keyvalue(get: 'rich_presence') || next
-    # event.bot.update_presence(status: :dnd, game: YAML.load(game))
+    event.bot.ext(:status)&.submit!(status: :dnd)
   end
 
   ## EV: _debug_ unhandled ##

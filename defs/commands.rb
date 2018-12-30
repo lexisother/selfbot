@@ -1,5 +1,5 @@
 module Selfbot::Defs
-  cmd = $bot.ext(:cmd)
+  _cmd = $bot.ext(:cmd)
 
   ## CMD: thonk ##
 
@@ -18,7 +18,7 @@ module Selfbot::Defs
     <:thankang:468827164838461450>
   ]
 
-  cmd.register(:thonk,
+  _cmd.register(:thonk,
   arg_count: 0..1) do |_, flag|
     count, dist = Selfbot::CONFIG[:thonk]
 
@@ -59,7 +59,7 @@ module Selfbot::Defs
     "nani" => "<:nani:412103942646923264>",
   }
 
-  cmd.register(:letters,
+  _cmd.register(:letters,
   arg_mode: :concat) do |_, argstr|
     result = String.new
 
@@ -83,7 +83,7 @@ module Selfbot::Defs
 
   ## CMD: tm ##
 
-  cmd.register(:tm,
+  _cmd.register(:tm,
   arg_mode: :concat) do |_, argstr|
     result = argstr.chars.each_with_index.map {|x, i| i.even? ? x.upcase : x.downcase}.join(' ')
     result.gsub!(/<\s:\s(?:\w\s)+:\s(?:\d\s)+>/) {|x| x.gsub(/\s/, "") }
@@ -94,7 +94,7 @@ module Selfbot::Defs
 
   ## CMD: cowsay ##
 
-  cmd.register(:cowsay, args: CmdArgs do
+  _cmd.register(:cowsay, args: CmdArgs do
     mode :concat
 
     flag :list, '-l'
@@ -114,14 +114,14 @@ module Selfbot::Defs
 
   ## CMD: junk ##
 
-  cmd.register(:junk,
+  _cmd.register(:junk,
   arg_count: 1..1, arg_types: [:integer]) do |_, count|
     %x(mkjunk #{count} 2>&1)
   end
 
   ## CMD: wetquote ##
 
-  cmd.register(:wetquote,
+  _cmd.register(:wetquote,
   arg_count: 0..2, arg_types: [:integer, :string]) do |_, count, cow|
     count = [1, count || 1].max
     if cow
@@ -143,7 +143,7 @@ module Selfbot::Defs
     :uwut7:488077398345121795 :uwut8:488077473196802089
   ]
 
-  cmd.register(:uwut,
+  _cmd.register(:uwut,
   arg_count: 1..1, arg_types: [:integer]) do |event, msgid|
     message = event.channel.message(msgid)
     next "\u{274C} Invalid message ID" unless message
@@ -160,7 +160,7 @@ module Selfbot::Defs
 
   EVAL_GLOBALS = Selfbot::EvalStorage.new
 
-  cmd.register(:eval, args: CmdArgs do
+  _cmd.register(:eval, args: CmdArgs do
     mode :concat
   end) do |event, argstr|
     # kludge
@@ -189,7 +189,7 @@ module Selfbot::Defs
 
   ## CMD: sh ##
 
-  cmd.register(:sh, args: CmdArgs do
+  _cmd.register(:sh, args: CmdArgs do
     mode :concat
   end) do |_, argstr|
     # kludge
@@ -205,7 +205,7 @@ module Selfbot::Defs
 
   ## CMD: sql ##
 
-  cmd.register(:sql,
+  _cmd.register(:sql,
   arg_mode: :concat) do |event, argstr|
     require 'terminal-table'
 
@@ -229,14 +229,14 @@ module Selfbot::Defs
 
   ## CMD: avatar ##
 
-  cmd.register(:avatar,
+  _cmd.register(:avatar,
   arg_count: 1..-1, arg_types: [ [:user, :nil] ]) do |_, *args|
     args.map {|x| x&.avatar_url || '(Invalid User)' }.join("\n")
   end
 
   ## CMD: emoji ##
 
-  cmd.register(:emoji,
+  _cmd.register(:emoji,
   arg_count: 1..-1, arg_types: [ [:emoji, :nil] ]) do |_, *args|
     args.map {|x| x&.icon_url || '(Invalid Emoji)' }.join("\n")
   end
@@ -245,7 +245,7 @@ module Selfbot::Defs
 
   UINFO_ROLES_MAX = 5
 
-  cmd.register(:uinfo, args: CmdArgs do
+  _cmd.register(:uinfo, args: CmdArgs do
     count 1..1
     types [:member, :user]
 
@@ -302,38 +302,38 @@ module Selfbot::Defs
 
   ## CMD: status ##
 
-  STATUS_FIELDS = [
-    :type, :name, :url,
-    :details, :state,
-    :application,
-    :small_image, :small_text,
-    :large_image, :large_text,
-    :start_time, :end_time,
-  ].freeze
+  $bot.ext_add(:status, Selfbot::StatusHandler)
 
-  cmd.register(:status,
-  arg_count: 1..1, arg_types: [:yaml]) do |event, data|
-    #require 'deep_merge'
-    #require 'yaml'
+  _cmd.register(:status,
+  arg_count: 1..2, arg_types: [:symbol, :yaml]) do |event, cmd, data|
+    status = event.bot.ext(:status)
 
-    #game = event.bot.profile.game
-    #game = Hash[STATUS_FIELDS.each {|x| [x, game.send(x)] }]
-    #game.deep_merge!(data)
-
-    #$dbc.keyvalue(set: 'rich_presence', value: YAML.dump(game))
-    #event.bot.update_presence(game: game)
+    case cmd
+    when :get
+      yml = status.load(raw: true)
+      "```yml\n#{yml || 'null'}\n```"
+    when :set, :aug
+      next "\u{274C} No data provided" if data.nil?
+      status.update(data, merge: cmd == 'aug')
+      status.submit!
+    when :rem
+      status.reset
+      status.submit!
+    else
+      "\u{274C} Invalid option specified"
+    end
   end
 
   ## CMD: pick ##
 
-  cmd.register(:pick,
+  _cmd.register(:pick,
   arg_count: 1..-1, arg_types: [:string]) do |event, *args|
     %(\u{1F3B2} The Computer™ has picked "#{args.shuffle.sample}")
   end
 
   ## CMD: reflink ##
 
-  cmd.register(:reflink,
+  _cmd.register(:reflink,
   arg_count: 2..2, arg_types: [:channel, :time]) do |event, channel, time|
     snowflake = MijDiscord::Data::IDObject.synthesize(time)
     %(https://discordapp.com/channels/#{channel.id}/#{channel.id}/#{snowflake})
@@ -341,7 +341,7 @@ module Selfbot::Defs
 
   ## CMD: tag ##
 
-  cmd.register(:tag,
+  _cmd.register(:tag,
   arg_count: 1..-1, arg_types: [:string]) do |event, tag, *args|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
@@ -356,7 +356,7 @@ module Selfbot::Defs
 
   ## CMD: tag? ##
 
-  cmd.register(:"tag?",
+  _cmd.register(:"tag?",
   arg_count: 0..1, arg_types: [:iregexp]) do |event, filter|
     dbc = event.bot.ext(:dbc)
     result = dbc.query(TAG_LIST, [event.bot.profile.id])
@@ -370,7 +370,7 @@ module Selfbot::Defs
 
   ## CMD: tag+ ##
 
-  cmd.register(:"tag+",
+  _cmd.register(:"tag+",
   arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
@@ -385,7 +385,7 @@ module Selfbot::Defs
 
   ## CMD: tag= ##
 
-  cmd.register(:"tag=",
+  _cmd.register(:"tag=",
   arg_count: 2..2, arg_types: [:string]) do |event, tag, data|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
@@ -401,7 +401,7 @@ module Selfbot::Defs
 
   ## CMD: tag- ##
 
-  cmd.register(:"tag-",
+  _cmd.register(:"tag-",
   arg_count: 1..1, arg_types: [:string]) do |event, tag|
     next "\u{274C} Tag name cannot be empty" if tag.empty?
 
