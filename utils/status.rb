@@ -26,6 +26,7 @@ module Selfbot
       end
 
       game.merge!(data)
+      game.reject! {|_,v| v.nil? }
       @bot.ext(:dbc).keyvalue(set: KEYVALUE, value: YAML.dump(game))
 
       game
