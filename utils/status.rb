@@ -10,11 +10,22 @@ module Selfbot
       @bot = bot
     end
 
-    def load(raw: false)
-      data = @bot.ext(:dbc).keyvalue(get: KEYVALUE)
+    def load(raw: false, preset: nil)
+      key = preset ? "#{KEYVALUE}@#{preset}" : KEYVALUE
+      data = @bot.ext(:dbc).keyvalue(get: key)
 
-      return data if raw
-      data ? YAML.load(data) : false
+      raw ? data : (data ? YAML.load(data) : false)
+    end
+
+    def save(data, raw: false, preset: nil)
+      key = preset ? "#{KEYVALUE}@#{preset}" : KEYVALUE
+
+      if data
+        data = YAML.dump(data) unless raw
+        @bot.ext(:dbc).keyvalue(set: key, value: data)
+      else
+        @bot.ext(:dbc).keyvalue(clear: key)
+      end
     end
 
     def update(data, merge: false)
@@ -32,14 +43,8 @@ module Selfbot
       game
     end
 
-    def reset
-      @bot.ext(:dbc).keyvalue(clear: KEYVALUE)
-      nil
-    end
-
     def submit!(status: nil)
       @bot.update_presence(status: status, game: self.load)
-      nil
     end
   end
 end

@@ -309,18 +309,30 @@ module Selfbot::Defs
     status = event.bot.ext(:status)
 
     case cmd
-    when :get
-      yml = status.load(raw: true)
-      "```yml\n#{yml || 'null'}\n```"
-    when :set, :aug
-      next "\u{274C} No data provided" if data.nil?
-      status.update(data, merge: cmd == :aug)
-      status.submit!
-    when :rem
-      status.reset
-      status.submit!
-    else
-      "\u{274C} Invalid option specified"
+      when :get
+        yml = status.load(raw: true)
+        "```yml\n#{yml || 'null'}\n```"
+      when :set, :aug
+        next "\u{274C} Invalid presence data" unless data.is_a?(Hash)
+        status.update(data, merge: cmd == :aug)
+        status.submit!
+      when :clr
+        status.save(false)
+        status.submit!
+      when :prld
+        data = data.is_a?(String) && status.load(preset: data)
+        next "\u{274C} Invalid preset name" unless data
+        status.update(data, merge: false)
+        status.submit!
+      when :prst
+        next "\u{274C} Invalid preset name" unless data.is_a?(String)
+        yml = status.load(raw: true)
+        status.save(yml, raw: true, preset: data)
+      when :prcl
+        next "\u{274C} Invalid preset name" unless data.is_a?(String)
+        status.save(false, preset: data)
+      else
+        "\u{274C} Invalid option specified"
     end
   end
 
