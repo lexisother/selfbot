@@ -5,6 +5,7 @@ module Selfbot::Defs
   KEYVALUE_GET = %(select value from keyvalues where key = $1)
   KEYVALUE_SET = %(insert into keyvalues (key, value) values ($1, $2) on conflict (key) do update set value = $2)
   KEYVALUE_CLEAR = %(delete from keyvalues where key = $1)
+  KEYVALUE_FIND = %(select key from keyvalues where key like $1)
 
   ## DB: tagstore ##
 
@@ -37,6 +38,9 @@ module Selfbot::Defs
       elsif (key = args[:get])
         res = query(KEYVALUE_GET, [key])
         res.one? ? res.first['value'] : nil
+      elsif (key = args[:find])
+        res = query(KEYVALUE_FIND, ["%#{key}%"])
+        res.map {|x| x['key'] }
       end
     end
   end

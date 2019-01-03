@@ -311,7 +311,7 @@ module Selfbot::Defs
     case cmd
       when :get
         yml = status.load(raw: true)
-        "```yml\n#{yml || 'null'}\n```"
+        %(```yml\n#{yml || 'null'}\n```)
       when :set, :aug
         next "\u{274C} Invalid presence data" unless data.is_a?(Hash)
         status.update(data, merge: cmd == :aug)
@@ -324,15 +324,15 @@ module Selfbot::Defs
         next "\u{274C} Invalid preset name" unless data
         status.update(data, merge: false)
         status.submit!
-      when :prst
+      when :prst, :prcl
         next "\u{274C} Invalid preset name" unless data.is_a?(String)
-        yml = status.load(raw: true)
+        yml = cmd == :prst ? status.load(raw: true) : nil
         status.save(yml, raw: true, preset: data)
-      when :prcl
-        next "\u{274C} Invalid preset name" unless data.is_a?(String)
-        status.save(false, preset: data)
+      when :prfn
+        list = status.list_presets.sort!
+        %(```\n#{list.join("\t")}\n```)
       else
-        "\u{274C} Invalid option specified"
+        "\u{274C} Invalid function specified"
     end
   end
 

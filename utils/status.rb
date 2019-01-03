@@ -28,6 +28,16 @@ module Selfbot
       end
     end
 
+    def list_presets
+      key = "#{KEYVALUE}@"
+      list = @bot.ext(:dbc).keyvalue(find: key)
+
+      list.map! {|x| x[key.length..-1] }
+      list.select! {|x| yield x } if block_given?
+
+      list
+    end
+
     def update(data, merge: false)
       game = {}
 
