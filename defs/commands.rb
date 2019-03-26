@@ -121,26 +121,36 @@ module Selfbot::Defs
 
   ## CMD: wetquote ##
 
-  _cmd.register(:wetquote,
-  arg_count: 0..2, arg_types: [:integer, :string]) do |_, count, cow|
-    count = [1, count || 1].max
-    if cow
+  _cmd.register(:wetquote, args: CmdArgs do
+    flag :quote, '-q', String, 'quotes'
+    flag :count, '-c', Integer, 1
+    flag :cowsay, '-S'
+  end) do |_, opts|
+    quote = opts[:quote].shellescape
+    count = [opts[:count], 1].max
+
+    if (cow = opts[:cowsay])
       cow = cow.shellescape
-      result = %x(wetquote -rc #{count} | cowsay -f #{cow} 2>&1)
+      result = %x(wetquote -rc #{count} -q #{quote} | cowsay -f #{cow} 2>&1)
       %(```\n#{result}\n```)
     else
-      %x(wetquote -c #{count})
+      %x(wetquote -c #{count} -q #{quote})
     end
   end
 
   ## CMD: uwut ##
 
   UWUT = %w[
-    :uwut:517331842974744586 :uwut:371711644897771520
-    :uwut1:488077317999165441 :uwut2:488077336185536523
-    :uwut3:488077349951111171 :uwut4:488077359799468087
-    :uwut5:488077370478034945 :uwut6:488077380045242368
-    :uwut7:488077398345121795 :uwut8:488077473196802089
+    :uwut1:552417517700644865 :uwut2:552417517818085396
+    :uwut3:552417518287978513 :uwut4:552417522914426880
+    :uwut5:552417523237257216 :uwut6:552417523505692692
+    :uwut7:552417523505692712 :uwut11:552417533349593089
+    :uwut15:552417533530079262 :uwut9:552417533601251329
+    :uwut16:552417533605445632 :uwut18:552417533605576705
+    :uwut19:552417533639262209 :uwut13:552417533702176769
+    :uwut12:552417533727211520 :uwut14:552417533743857684
+    :uwut20:552417533798383616 :uwut8:552417533907566594
+    :uwut10:552417533941121044 :uwut17:552417533987258387
   ]
 
   _cmd.register(:uwut,
