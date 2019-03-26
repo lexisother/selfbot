@@ -154,12 +154,20 @@ module Selfbot::Defs
   ]
 
   _cmd.register(:uwut,
-  arg_count: 1..1, arg_types: [:integer]) do |event, msgid|
+  arg_count: 1..2, arg_types: [:integer]) do |event, msgid, max|
     message = event.channel.message(msgid)
     next "\u{274C} Invalid message ID" unless message
 
-    UWUT.each do |uwut|
-      message.add_reaction(uwut)
+    num = 20 - message.reactions.length
+    num = max < num ? max : num
+
+    UWUT.take(num).each do |uwut|
+      begin
+        message.add_reaction(uwut)
+      rescue MijDiscord::Errors::Forbidden
+        break # Exit if failed to add reaction
+      end
+
       sleep(0.33)
     end
 
