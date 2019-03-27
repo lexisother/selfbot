@@ -159,7 +159,7 @@ module Selfbot::Defs
     next "\u{274C} Invalid message ID" unless message
 
     num = 20 - message.reactions.length
-    num = max < num ? max : num
+    num = max if max && max < num
 
     UWUT.take(num).each do |uwut|
       begin
