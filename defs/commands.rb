@@ -445,4 +445,14 @@ module Selfbot::Defs
     end
   end
 
+
+  ## CMD: id2t ##
+
+  _cmd.register(:id2t,
+  arg_count: 1..1, arg_types: [[:integer, :user, :channel, :role, :emoji]]) do |_, arg|
+    repr = arg.respond_to?(:mention) ? arg.mention : arg.to_s
+    value = MijDiscord::Data::IDObject.timestamp(arg.to_id)
+    "`#{repr}` → #{value}"
+  end
+
 end

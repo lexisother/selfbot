@@ -149,7 +149,7 @@ module Selfbot::Parser
         when :member
           context.server&.member(mention)
         when :channel
-          context.server&.member(mention)
+          context.server&.channel(mention)
         when :role
           context.server&.role(mention)
         when :emoji
