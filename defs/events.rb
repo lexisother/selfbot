@@ -2,8 +2,10 @@ module Selfbot::Defs
 
   ## EV: presence ready ##
 
+  USER_STATUS = :dnd
+
   $bot.add_event(:ready, :presence) do |event|
-    event.bot.ext(:status)&.submit!(status: :dnd)
+    event.bot.ext(:status)&.submit!(status: USER_STATUS)
   end
 
   ## EV: _debug_ unhandled ##
