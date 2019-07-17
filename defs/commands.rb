@@ -34,7 +34,7 @@ module Selfbot::Defs
       thonk : "***T H O N K . . .*** #{thonk}"
   end
 
-  ## CMD: letters ##
+  ## CMD: letr ##
 
   LETTERS_MATCH = /\G([a-z]+)|([0-9]+)|(!?[!?]| )|(?:{(\w*)(?:=([^}]*))?})|(<[^>]*?>)|(.)/im
   LETTERS_NUM = %w[zero one two three four five six seven eight nine]
@@ -61,7 +61,7 @@ module Selfbot::Defs
     "nani" => "<:nani:412103942646923264>",
   }
 
-  _cmd.register(:letters,
+  _cmd.register(:letr,
   arg_mode: :concat) do |_, argstr|
     result = String.new
 
