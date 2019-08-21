@@ -8,6 +8,8 @@ module Selfbot
   class Database
     include DBC
 
+    RECONN_MAX = 3
+
     def initialize(config = {})
       @pg = PG::Connection.open(**config)
       @mutex = Mutex.new
@@ -17,7 +19,21 @@ module Selfbot
     end
 
     def query(sql, args = [], &blk)
-      @mutex.synchronize { @pg.exec_params(sql, args, &blk) }
+      @mutex.synchronize do
+        reconn = 0
+
+        begin
+          @pg.exec_params(sql, args, &blk)
+        rescue PG::UnableToSend
+          raise if reconn > RECONN_MAX
+
+          MijDiscord::LOGGER.warn("Selfbot") { "Database connection failure, reconnecting..." }
+
+          @pg.reset
+          reconn += 1
+          retry
+        end
+      end
     end
 
     def transaction
