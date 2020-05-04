@@ -457,4 +457,11 @@ module Selfbot::Defs
     "`#{repr}` → #{value}"
   end
 
+
+  ## CD: abort! ##
+
+  _cmd.register(:abort!) do |evt|
+    exit(128)
+  end
+
 end
