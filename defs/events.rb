@@ -6,6 +6,9 @@ module Selfbot::Defs
 
   $bot.add_event(:ready, :presence) do |event|
     event.bot.ext(:status)&.submit!(status: USER_STATUS)
+
+    # Load stupid scripts from `trash/` directory
+    Dir["#{File.dirname __FILE__}/trash/*.rb"].each {|f| require f }
   end
 
   ## EV: _debug_ unhandled ##
