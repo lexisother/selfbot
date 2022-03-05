@@ -1,11 +1,20 @@
 module Selfbot
   module BotExt; end
 
-  class Bot < MijDiscord::Bot
+  class Bot < Discordrb::Bot
     attr_reader :config
 
     def initialize(opts, config)
+      ignore_self = false
+
+      if opts.key?(:ignore_self)
+        ignore_self = true if ignore_self
+
+        opts.delete(:ignore_self)
+      end
+
       super(**opts)
+      self.ignore_user(self.profile.id) if ignore_self
 
       @config = config
       @extlist = {}

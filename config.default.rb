@@ -8,10 +8,10 @@ module Selfbot
     token: auth[1],
     ignore_bots: true,
     ignore_self: false,
-  }.freeze
+  }
 
   DBCOPTS = {
-    dbname: 'mijyu',
+    dbname: 'selfbot',
   }.freeze
 
   CONFIG = {

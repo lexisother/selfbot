@@ -2,6 +2,7 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'mij-discord'
+require 'discordrb'
 
 module Selfbot
   # Load config before anything else
@@ -17,7 +18,6 @@ require_relative 'command'
 require_relative 'database'
 
 $bot = Selfbot::Bot.new(Selfbot::BOTOPTS, Selfbot::CONFIG)
-MijDiscord::LOGGER.level = :info
 
 $bot.ext_add(:cmd, Selfbot::CommandSystem, Selfbot::CMD_PREFIX)
 $bot.ext_add(:dbc, Selfbot::Database, Selfbot::DBCOPTS)
