@@ -30,9 +30,9 @@ require_relative 'defs/commands'
 require_relative 'defs/database'
 
 begin
-  $bot.connect(false)
+  $bot.run
 rescue Interrupt
   puts("Received Ctrl-C, exiting...")
 end
 
-$bot.disconnect
+$bot.stop

@@ -35,12 +35,16 @@ module Selfbot
       nil
     end
 
-    def disconnect
+    def stop
       @extlist.each_value do |ext|
         ext.disconnect if ext.respond_to?(:disconnect)
       end
 
       super
+    end
+
+    def add_event(*args)
+      # TODO: map first argument to event Discordrb::Events::*, pass rest to add_await (which seems unstable)
     end
   end
 end
