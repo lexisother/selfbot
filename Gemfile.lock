@@ -36,9 +36,13 @@ GEM
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
       netrc (~> 0.8)
+    shellwords (0.1.0)
+    terminal-table (3.0.2)
+      unicode-display_width (>= 1.1.1, < 3)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.8)
+    unicode-display_width (2.1.0)
     websocket (1.2.9)
     websocket-client-simple (0.5.1)
       event_emitter
@@ -51,6 +55,8 @@ DEPENDENCIES
   discordrb
   mij-discord!
   pg
+  shellwords
+  terminal-table
 
 BUNDLED WITH
    2.3.8
