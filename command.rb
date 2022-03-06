@@ -244,7 +244,13 @@ module Selfbot
     def configure(bot)
       bot.add_event(:create_message,
       user: Selfbot::BOTOPTS[:client_id],
-      include: %r(\A#{@prefix}\S+)) {|e| execute(e) }
+      include: %r(\A#{@prefix}\S+)) do |e|
+        begin
+          execute(e)
+        rescue
+          puts "it was in the command handler all along :OOOOO"
+        end
+      end
     end
   end
 end

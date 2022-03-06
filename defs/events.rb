@@ -13,9 +13,10 @@ module Selfbot::Defs
 
   ## EV: _debug_ unhandled ##
 
-  $bot.add_event(:unhandled, :_debug_) do |event|
-    MijDiscord::LOGGER.info("Events") {"Unhandled <#{event.name} #{event.data.inspect}>"}
-  end
+  # NOTE: May bring back later?
+  # $bot.add_event(:unhandled, :_debug_) do |event|
+  #   MijDiscord::LOGGER.info("Events") {"Unhandled <#{event.name} #{event.data.inspect}>"}
+  # end
 
   ## EV: logging create_message,edit_message,delete_message ##
 

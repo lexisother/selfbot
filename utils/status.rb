@@ -54,7 +54,7 @@ module Selfbot
     end
 
     def submit!(status: nil)
-      @bot.update_presence(status: status, game: self.load)
+      @bot.update_status(status, self.load, nil)
     end
   end
 end
