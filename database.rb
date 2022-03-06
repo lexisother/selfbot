@@ -27,7 +27,7 @@ module Selfbot
         rescue PG::UnableToSend
           raise if reconn > RECONN_MAX
 
-          MijDiscord::LOGGER.warn("Selfbot") { "Database connection failure, reconnecting..." }
+          LOGGER.warn("Selfbot") { "Database connection failure, reconnecting..." }
 
           @pg.reset
           reconn += 1

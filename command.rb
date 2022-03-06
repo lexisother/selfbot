@@ -38,7 +38,9 @@ module Selfbot
     end
   end
 
+  # TODO: REPLACING REFERENCE OF THIS BREAKS EVERYTHING, FIX
   class CommandEvent < MijDiscord::Events::Message
+  # class CommandEvent < Discordrb::Events::MessageEvent
     attr_reader :command
 
     def initialize(bot, message, command)
@@ -239,7 +241,7 @@ module Selfbot
             text = result.to_s
         end
 
-        event.channel.send_message(text)
+        event.channel.send_message(text) unless text == ""
       end
 
       nil

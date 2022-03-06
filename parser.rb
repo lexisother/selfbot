@@ -131,7 +131,7 @@ module Selfbot::Parser
         return nil if type && type != :emoji
         parse_mention_id($1, type || :emoji, context) || begin
            em_data = { 'id' => $3.to_i, 'name' => $2, 'animated' => !$1.empty? }
-           MijDiscord::Data::Emoji.new(em_data, nil)
+           Discordrb::Emoji.new(em_data, nil)
         end
 
       elsif mention =~ /^(\d+)-(\d+)$/

@@ -166,7 +166,7 @@ module Selfbot::Defs
     UWUT.take(num).each do |uwut|
       begin
         message.add_reaction(uwut)
-      rescue MijDiscord::Errors::Forbidden
+      rescue Discordrb::Errors::NoPermission
         break # Exit if failed to add reaction
       end
 
@@ -293,7 +293,7 @@ module Selfbot::Defs
       output << "Avatar: #{user.avatar_url}#{large}"
     end
 
-    if user.is_a?(MijDiscord::Data::Member)
+    if user.is_a?(Discordrb::Member)
       member_opts = opts.try_keys(:nk, :jt, :rl, :mbr)
 
       output << ("—" * 15) if output.any? && member_opts
@@ -367,7 +367,7 @@ module Selfbot::Defs
 
   _cmd.register(:reflink,
   arg_count: 2..2, arg_types: [:channel, :time]) do |event, channel, time|
-    snowflake = MijDiscord::Data::IDObject.synthesize(time)
+    snowflake = Discordrb::IDObject.synthesise(time)
     %(https://discordapp.com/channels/#{channel.id}/#{channel.id}/#{snowflake})
   end
 
@@ -453,7 +453,7 @@ module Selfbot::Defs
   _cmd.register(:id2t,
   arg_count: 1..1, arg_types: [[:integer, :user, :channel, :role, :emoji]]) do |_, arg|
     repr = arg.respond_to?(:mention) ? arg.mention : arg.to_s
-    value = MijDiscord::Data::IDObject.timestamp(arg.to_id)
+    value = Discordrb::IDObject.synthesise(arg.to_id)
     "`#{repr}` → #{value}"
   end
 
