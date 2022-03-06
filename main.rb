@@ -1,8 +1,9 @@
 require 'rubygems'
 require 'bundler/setup'
 
-require 'mij-discord'
 require 'discordrb'
+require 'mij-discord'
+require_relative 'selfbot-polyfills'
 
 module Selfbot
   # Load config before anything else
