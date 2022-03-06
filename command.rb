@@ -202,10 +202,14 @@ module Selfbot
       return unless prefix
 
       ignore_srv = Selfbot::CONFIG.dig(:system, :ignore_srv)
-      return if ignore_srv.include?(event.server.id)
+      if event.server
+        return if ignore_srv.include?(event.server.id)
+      end
 
       ignore_chan = Selfbot::CONFIG.dig(:system, :ignore_chan)
-      return if ignore_chan.include?(event.channel.id)
+      if event.channel
+        return if ignore_chan.include?(event.channel.id)
+      end
 
       string = string[prefix.length .. -1].strip
       match = string.match(/\A(\S+)(?:\s+(.+))?\z/m)
@@ -235,7 +239,7 @@ module Selfbot
             text = result.to_s
         end
 
-        event.channel.send_message(text: text, embed: embed)
+        event.channel.send_message(text)
       end
 
       nil
@@ -244,12 +248,8 @@ module Selfbot
     def configure(bot)
       bot.add_event(:create_message,
       user: Selfbot::BOTOPTS[:client_id],
-      include: %r(\A#{@prefix}\S+)) do |e|
-        begin
-          execute(e)
-        rescue
-          puts "it was in the command handler all along :OOOOO"
-        end
+      include: %r(\A#{@nprefix}\S+)) do |e|
+        execute(e)
       end
     end
   end

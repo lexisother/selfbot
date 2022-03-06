@@ -1,3 +1,11 @@
+module Discordrb
+  class User
+    def current_bot?
+      false
+    end
+  end
+end
+
 module Selfbot
   module BotExt; end
 
@@ -51,13 +59,15 @@ module Selfbot
       ignore_self = false
 
       if opts.key?(:ignore_self)
-        ignore_self = true if ignore_self
+        ignore_self = opts[:ignore_self]
 
         opts.delete(:ignore_self)
       end
 
       super(**opts)
-      ignore_user(profile.id) if ignore_self
+      if ignore_self == true
+        ignore_user(profile.id)
+      end
 
       @config = config
       @extlist = {}
@@ -87,28 +97,24 @@ module Selfbot
     end
 
     # TODO: REFACTOR!!!
-    def add_event(*args, **named, &blk)
+    def add_event(type, key = nil, **filter, &blk)
+      raise ArgumentError, "Invalid event type: #{type}" unless EVENTS.key?(type)
 
-      key = (0...8).map { (65 + rand(26)).chr }.join
-      if named.key?(:key)
-        key = named[:key]
-        args.delete(:key)
-      else
-        args.delete_at(1)
+      mappedEvent = EVENTS[type]
+      add_await(key, mappedEvent) do |event|
+        handleEvent = true
+
+        if type == :create_message
+          if filter.key?(:user)
+            handleEvent = event.user.id.to_s == filter[:user].to_s
+          end
+          if filter.key(:include)
+            handleEvent = filter[:include].match?(event.message.content)
+          end
+        end
+
+        blk.call(event) if handleEvent
       end
-
-      event = args[0]
-      if named.key?(:type)
-        event = named[:type]
-        args.delete(:type)
-      else
-        args.shift
-      end
-
-      raise ArgumentError, "Invalid event type: #{event}" unless EVENTS.key?(event)
-
-      mappedEvent = EVENTS[event]
-      add_await(key, mappedEvent, *args, **named, &blk)
     end
   end
 end
